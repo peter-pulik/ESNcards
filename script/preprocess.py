@@ -91,7 +91,7 @@ with open(sys.argv[1], "r", encoding='utf-8') as f:
                     print("[" + str(i) + "] " + n)
                     i += 1
                 print("Which names should I use? (use numbers separated by ',')")
-                text = raw_input("Names: ")
+                text = input("Names: ")
                 names_to_use = text.split(",")
                 name = ""
                 for ntu in names_to_use:
