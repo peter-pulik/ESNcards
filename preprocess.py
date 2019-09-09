@@ -4,6 +4,7 @@ import csv
 import imghdr
 import requests
 from shutil import move
+from tempfile import mkstemp
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -37,25 +38,37 @@ def save_response_content(response, destination):
             if chunk: # filter out keep-alive new chunks
                 f.write(chunk)
 
+total_lines = 0
+
+def replace_and_count(file_path, pattern, subst):
+    global total_lines
+    #Create temp file
+    fh, abs_path = mkstemp()
+    with os.fdopen(fh,'w') as new_file:
+        with open(file_path) as old_file:
+            for line in old_file:
+                new_file.write(line.replace(pattern, subst))
+                total_lines += 1
+    #Remove original file
+    os.remove(file_path)
+    #Move new file
+    move(abs_path, file_path)
+
 line_number = 0
 
 if len(sys.argv) != 2 and len(sys.argv) != 3:
     print('ERROR: Run as "python ' + sys.argv[0] + ' CSV_FILE [OUT_FILE]"')
     sys.exit(1)
 
+replace_and_count(sys.argv[1], '","', '";"')
+
 if len(sys.argv) == 3:
     csv_output = open(sys.argv[2], "w")
 else:
     csv_output = open("students.csv", "w")
 
-total_lines = 0
-
 with open(sys.argv[1], "r") as f:
-    for line in f:
-        total_lines += 1
-
-with open(sys.argv[1], "r") as f:
-    csv_reader = csv.reader(f, delimiter=',')
+    csv_reader = csv.reader(f, delimiter=';')
     dirName = 'pictures'
     try:
         # Create target Directory
@@ -70,6 +83,7 @@ with open(sys.argv[1], "r") as f:
         else:
             print(str(line_number) + "/" + str(total_lines - 1))
             name = line[1]
+            print('Before: "' + name + '"')
             if len(name) > 30:
                 print('WARNING: Name "' + name + '" longer than 30 characters!')
                 names = name.split()
@@ -84,6 +98,13 @@ with open(sys.argv[1], "r") as f:
                 for ntu in names_to_use:
                     name += " " + names[int(ntu)]
                 name = name[1:]
+            # Delete spaces at the beginning
+            while name[0].isspace():
+                name = name[1:]
+            # Delete spaces at the end
+            while name[-1].isspace():
+                name = name[:-1]
+            print('Name: "' + name + '"')
             country = line[2]
             date_str = line[3]
             date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
