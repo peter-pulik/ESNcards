@@ -104,6 +104,12 @@ with open(sys.argv[1], "r", encoding='utf-8') as f:
             while name[-1].isspace():
                 name = name[:-1]
             country = line[2]
+            # Delete spaces at the beginning
+            while country[0].isspace():
+                country = country[1:]
+            # Delete spaces at the end
+            while country[-1].isspace():
+                country = country[:-1]
             date_str = line[3]
             date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
             today_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -122,7 +128,7 @@ with open(sys.argv[1], "r", encoding='utf-8') as f:
             TM1 = today_str[6]
             TY0 = today_str[2]
             TY1 = today_str[3]
-            csv_output.write('"' + name + '"' + "," + country + "," + D0 + "," + D1 + "," + M0 + "," + M1 + "," + Y0 + "," + Y1 + ",")
+            csv_output.write('"' + name + '"' + "," + '"' + country + '"' + "," + D0 + "," + D1 + "," + M0 + "," + M1 + "," + Y0 + "," + Y1 + ",")
             csv_output.write(TD0 + "," + TD1 + "," + TM0 + "," + TM1 + "," + TY0 + "," + TY1 + "\n")
             file_id = line[4][line[4].find("id=") + 3:]
             download_file_from_google_drive(file_id, name)
